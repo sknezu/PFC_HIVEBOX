@@ -1,3 +1,0 @@
-# initial dockerfile
-
-FROM .

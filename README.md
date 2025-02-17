@@ -18,9 +18,11 @@ Phase 1 relies on a **Python Flask app** that returns values from a **single sen
 ## Phase 2 (Apr - June 2025)
 
 Phase 2 includes **three sensors close to each other**:
- > Hotzelsroda: ([5b267cac1fef04001b78f88b](https://opensensemap.org/explore/5b267cac1fef04001b78f88b)) 
- > EA Wartenberg: ([5d13ec6630bde6001a618df5](https://opensensemap.org/explore/5d13ec6630bde6001a618df5)) 
- > Gerstungen: ([5d0fc7fd30bde6001a364a79](https://opensensemap.org/explore/5d0fc7fd30bde6001a364a79))
+ > **Hotzelsroda**: ([5b267cac1fef04001b78f88b](https://opensensemap.org/explore/5b267cac1fef04001b78f88b)) 
+ 
+ > **EA Wartenberg**: ([5d13ec6630bde6001a618df5](https://opensensemap.org/explore/5d13ec6630bde6001a618df5)) 
+
+ > **Gerstungen**: ([5d0fc7fd30bde6001a364a79](https://opensensemap.org/explore/5d0fc7fd30bde6001a364a79))
 
 These sensors will retrieve the original **temperature data** (/temperature) and  **version of the app** (/version), along with  **prometheus metrics** (/metrics) and  **stored time of data** (/store) and, if time allows  **readyness of data** (/readyz).
 

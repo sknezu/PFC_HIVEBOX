@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hive-pod
+spec:
+  dnsPolicy: "None"  # DNS policy to None
+  dnsConfig:
+    nameservers:
+      - 8.8.8.8  
+      - 8.8.4.4  
+  containers:
+    - name: hive-01
+      image: sknezu/hive-app:0.5.0 
+      ports:
+        - containerPort: 5000  # Optional: Define ports if necessary

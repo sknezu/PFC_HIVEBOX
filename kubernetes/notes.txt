@@ -1,0 +1,21 @@
+$ kind create cluster 
+    # create cluster using docker containers
+
+create pod.yaml 
+    # define the pod img (dockerfile) - 1 container
+
+$ kubectl apply -f my-pod.yaml
+    # apply pod yaml
+
+$ kubectl get pods 
+    # check pod status
+
+$ kubectl describe pod my-pod 
+    # give more info about pod
+
+$ kubectl port-forward pod/my-pod 8080:80 
+    # forward local machine port - pod port
+
+    # Clean up
+$ kubectl delete -f my-pod.yaml
+$ kind delete cluster

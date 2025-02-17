@@ -3,10 +3,14 @@ name: Build and Push Docker Image to Docker Hub
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch (you can change this to your preferred branch)
+      - main  # Trigger on pushes to the main branch
+    paths:
+      - 'app/app.py'  # Only trigger when app.py changes
   pull_request:
     branches:
       - main  # Trigger on pull requests targeting the main branch
+    paths:
+      - 'app/app.py'  # Only trigger when app.py changes
 
 jobs:
   build:

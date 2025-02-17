@@ -39,7 +39,7 @@ jobs:
         context: ./app  # Set the context to the /app folder (the folder containing the Dockerfile)
         file: ./app/Dockerfile  # Specify the path to the Dockerfile inside /app
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/hive-app:latest
+        tags: ${{ secrets.DOCKER_USERNAME }}/hive-app:0.5.0
 
     - name: Logout from Docker Hub
       run: docker logout

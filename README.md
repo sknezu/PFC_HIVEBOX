@@ -11,11 +11,11 @@ This project is divided into **2 phases**:
 Phase 1 relies on a **Python Flask app** that returns values from a **single sensor** ([5eba5fbad46fb8001b799786](https://opensensemap.org/explore/5eba5fbad46fb8001b799786)) to retrieve **temperature data**. Deploying it inside a **Kubernetes cluster**, this data will be gathered by **Prometheus** and shown in **Grafana** with a **Dashboard**, alongside the **Kubernetes cluster status**.
 
 ### Phase 1 Checklist:
-- [x] Python Flask Application
-- [x] Kubernetes Cluster
-- [x] Prometheus & Grafana basic configuration inside K8s
-- [x] Nginx as frontend (website) and/or data source (ingress)
-- [x] Python to Prometheus data gathering
+- &#9745; Python Flask Application
+- &#9744; Kubernetes Pod or Cluster
+- &#9744; Prometheus & Grafana basic configuration inside K8s
+- &#9744; Nginx as frontend (website) and/or data source (ingress)
+- &#9744; Python to Prometheus data gathering
 
 ## Phase 2
 

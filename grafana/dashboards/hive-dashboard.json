@@ -1,0 +1,87 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Bee Hive Temperature Monitoring",
+    "timezone": "browser",
+    "refresh": "30s",
+    "schemaVersion": 37,
+    "version": 1,
+    "panels": [
+      {
+        "type": "stat",
+        "title": "Current Temperature per Hive",
+        "targets": [
+          {
+            "expr": "sensor_temperature_celsius",
+            "legendFormat": "{{name}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "celsius",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "blue", "value": null },
+                { "color": "green", "value": 10 },
+                { "color": "orange", "value": 36 },
+                { "color": "red", "value": 40 }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 5 }
+      },
+      {
+        "type": "gauge",
+        "title": "Temperature Gauge per Hive",
+        "targets": [
+          {
+            "expr": "sensor_temperature_celsius",
+            "legendFormat": "{{name}}",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "celsius",
+            "min": 0,
+            "max": 50,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "blue", "value": null },
+                { "color": "green", "value": 10 },
+                { "color": "orange", "value": 36 },
+                { "color": "red", "value": 40 }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": { "x": 12, "y": 0, "w": 12, "h": 5 }
+      },
+      {
+        "type": "timeseries",
+        "title": "Temperature Over Time",
+        "targets": [
+          {
+            "expr": "sensor_temperature_celsius",
+            "legendFormat": "{{name}}",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "celsius"
+          },
+          "overrides": []
+        },
+        "gridPos": { "x": 0, "y": 5, "w": 24, "h": 10 }
+      }
+    ]
+  },
+  "overwrite": true
+}

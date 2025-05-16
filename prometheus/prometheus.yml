@@ -3,6 +3,6 @@ global:
 
 scrape_configs:
   - job_name: 'flask-app'
-    metrics_path: /metrics # explicit, though default is /metrics
     static_configs:
       - targets: ['web:5000']
+      

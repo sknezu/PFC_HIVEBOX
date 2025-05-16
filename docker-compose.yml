@@ -27,6 +27,8 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - web
     networks:
       - monitor
 
@@ -35,9 +37,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./grafana/dashboards:/etc/grafana/dashboards
-      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
-      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards/hive-dashboard.json:/etc/grafana/dashboards/hive-dashboard.json
+      - ./grafana/provisioning/dashboards/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./grafana/provisioning/datasources/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
     depends_on:
       - prometheus
     networks:

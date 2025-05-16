@@ -3,30 +3,35 @@ name: Build and Push Docker Image to Docker Hub
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch (you can change this to your preferred branch)
+      - main
+    paths:
+      - 'app/app.py'
   pull_request:
     branches:
-      - main  # Trigger on pull requests targeting the main branch
+      - main
+    paths:
+      - 'app/app.py'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v3
 
     - name: Cache Docker layers
-      uses: actions/cache@v2
+      id: docker-cache
+      uses: actions/cache@v3
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-docker-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-docker-
-    
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
@@ -36,10 +41,5 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
       with:
-        context: ./app  # Set the context to the /app folder (the folder containing the Dockerfile)
-        file: ./app/Dockerfile  # Specify the path to the Dockerfile inside /app
-        push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/hive-app:0.5.0
-
-    - name: Logout from Docker Hub
-      run: docker logout
+        context: ./app
+        file: ./app/Docker

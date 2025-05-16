@@ -2,24 +2,22 @@ version: '3.8'
 
 services:
   web:
-    build: ./app
+    image: sknezu/hive-monitor:latest
     ports:
       - "5000:5000"
-    env_file:
-      - ./app/.env
     networks:
       - monitor
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - web
-    networks:
-      - monitor
+#  nginx:
+#    image: nginx:latest
+#    ports:
+#      - "80:80"
+#    volumes:
+#      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+#    depends_on:
+#      - web
+#    networks:
+#      - monitor
 
   prometheus:
     image: prom/prometheus
@@ -37,9 +35,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./grafana/dashboards/hive-dashboard.json:/etc/grafana/dashboards/hive-dashboard.json
-      - ./grafana/provisioning/dashboards/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
-      - ./grafana/provisioning/datasources/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./grafana/dashboards/hive-dashboard.json:/var/lib/grafana/dashboards/hive-dashboard.json
+      - ./grafana/provisioning/dashboards/dashboards.yaml:/var/lib/grafana/provisioning/dashboards/dashboards.yaml
+      - ./grafana/provisioning/datasources/datasources.yaml:/var/lib/grafana/provisioning/datasources/datasources.yaml
     depends_on:
       - prometheus
     networks:

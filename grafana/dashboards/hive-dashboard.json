@@ -49,7 +49,40 @@
         },
         "gridPos": { "x": 0, "y": 0, "w": 6, "h": 5 },
         "repeat": "sensor_name",
-        "repeatDirection": "h"
+        "repeatDirection": "h",
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": { "params": [10], "type": "lt" },
+              "operator": { "type": "and" },
+              "query": { "params": ["A"] },
+              "reducer": { "params": [], "type": "min" },
+              "type": "query"
+            },
+            {
+              "evaluator": { "params": [36], "type": "lt" },
+              "operator": { "type": "and" },
+              "query": { "params": ["A"] },
+              "reducer": { "params": [], "type": "min" },
+              "type": "query"
+            },
+            {
+              "evaluator": { "params": [36], "type": "gt" },
+              "operator": { "type": "and" },
+              "query": { "params": ["A"] },
+              "reducer": { "params": [], "type": "max" },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "for": "5m",
+          "frequency": "1m",
+          "handler": 1,
+          "name": "Temperature Alerts",
+          "noDataState": "no_data",
+          "notifications": [],
+          "message": "Temperature Alert:\n{{ if lt .Value 10.0 }}[ALERT] Too Cold, Bees are freezing!{{ else if lt .Value 36.0 }}Good, Bees are happy :){{ else }}[ALERT] Too Hot, Bees are cooking!{{ end }}"
+        }
       },
       {
         "type": "gauge",

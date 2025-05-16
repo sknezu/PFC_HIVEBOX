@@ -1,0 +1,136 @@
+{
+  "id": null,
+  "title": "Bee Hive Temperature Monitoring",
+  "timezone": "browser",
+  "refresh": "30s",
+  "schemaVersion": 37,
+  "version": 1,
+  "variables": {
+    "list": [
+      {
+        "name": "sensor_name",
+        "type": "query",
+        "label": "Sensor Name",
+        "query": "label_values(sensor_temperature_celsius, name)",
+        "refresh": 2,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Current Temperature",
+      "targets": [
+        {
+          "expr": "sensor_temperature_celsius{name=\"$sensor_name\"}",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 10 },
+              { "color": "orange", "value": 36 },
+              { "color": "red", "value": 40 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 5 },
+      "repeat": "sensor_name",
+      "repeatDirection": "h",
+      "alert": {
+        "conditions": [
+          {
+            "evaluator": { "params": [10], "type": "lt" },
+            "operator": { "type": "and" },
+            "query": { "params": ["A"] },
+            "reducer": { "params": [], "type": "min" },
+            "type": "query"
+          },
+          {
+            "evaluator": { "params": [36], "type": "lt" },
+            "operator": { "type": "and" },
+            "query": { "params": ["A"] },
+            "reducer": { "params": [], "type": "min" },
+            "type": "query"
+          },
+          {
+            "evaluator": { "params": [36], "type": "gt" },
+            "operator": { "type": "and" },
+            "query": { "params": ["A"] },
+            "reducer": { "params": [], "type": "max" },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "5m",
+        "frequency": "1m",
+        "handler": 1,
+        "name": "Temperature Alerts",
+        "noDataState": "no_data",
+        "notifications": [],
+        "message": "Temperature Alert:\n{{ if lt .Value 10.0 }}[ALERT] Too Cold, Bees are freezing!{{ else if lt .Value 36.0 }}Good, Bees are happy :){{ else }}[ALERT] Too Hot, Bees are cooking!{{ end }}"
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "Temperature Gauge",
+      "targets": [
+        {
+          "expr": "sensor_temperature_celsius{name=\"$sensor_name\"}",
+          "legendFormat": "{{name}}",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "min": 0,
+          "max": 50,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 10 },
+              { "color": "orange", "value": 36 },
+              { "color": "red", "value": 40 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "x": 0, "y": 5, "w": 6, "h": 5 },
+      "repeat": "sensor_name",
+      "repeatDirection": "h"
+    },
+    {
+      "type": "timeseries",
+      "title": "Temperature Over Time",
+      "targets": [
+        {
+          "expr": "sensor_temperature_celsius{name=~\"$sensor_name\"}",
+          "legendFormat": "{{name}}",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": { "x": 0, "y": 10, "w": 24, "h": 10 }
+    }
+  ]
+}

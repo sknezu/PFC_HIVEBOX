@@ -6,3 +6,4 @@ pytest
 python-dateutil
 python-dotenv
 prometheus_flask_exporter
+prometheus_client

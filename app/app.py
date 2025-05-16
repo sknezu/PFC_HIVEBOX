@@ -15,44 +15,41 @@ SENSEBOX_IDS = os.getenv('SENSEBOX_IDS', '').split(',')
 SENSEBOX_NAMES = os.getenv('SENSEBOX_NAMES', '').split(',')
 API_VERSION = os.getenv('API_VERSION', '0.0.0')
 
-# Create a mapping between SENSEBOX_IDs and their names
+# Create a mapping between IDs and names
 SENSEBOX_MAP = dict(zip(SENSEBOX_IDS, SENSEBOX_NAMES))
 
-# Prometheus metric
+# Prometheus gauge: label by box_id and name
 temperature_gauge = Gauge('sensor_temperature_celsius', 'Sensor temperature in °C', ['box_id', 'name'])
 
 @dataclass
 class TemperatureInfo:
     createdAt: str
-    valid: bool
     value: float
 
     @classmethod
     def from_dict(cls, data: dict) -> "TemperatureInfo":
         jsonpath_expression = parse('$.sensors[?(@.unit=="°C")].lastMeasurement')
-        valid = False
-        value = 0.0
         created_at = ""
+        value = 0.0
         for match in jsonpath_expression.find(data):
             try:
                 created_at = match.value.get('createdAt', '')
                 if created_at:
                     created_at_fmt = createdAt_parser.isoparse(created_at)
                     if created_at_fmt > (datetime.now(timezone.utc) - timedelta(hours=1)):
-                        value = float(match.value.get('value', 0.0))  # Default to 0 if no value is found
-                        valid = True
+                        value = float(match.value.get('value', 0.0))
                         break
             except Exception as e:
                 print(f"Error parsing temperature data: {e}")
-        return cls(createdAt=created_at, value=value, valid=valid)
+        return cls(createdAt=created_at, value=value)
 
-def status_assess(avg_temp):
-    if avg_temp <= 10.0:
-        return '[ALERT]Too Cold, Bees are freezing!'
-    elif avg_temp > 10.0 and avg_temp <= 36.0:
+def status_assess(temp):
+    if temp <= 10.0:
+        return '[ALERT] Too Cold, Bees are freezing!'
+    elif temp <= 36.0:
         return 'Good, Bees are happy :)'
     else:
-        return '[ALERT]Too Hot, Bees are cooking!'
+        return '[ALERT] Too Hot, Bees are cooking!'
 
 def create_app(testing=False):
     app = Flask(__name__)
@@ -64,63 +61,66 @@ def create_app(testing=False):
         valid_readings = []
         checked_at = datetime.now(timezone.utc).isoformat()
 
-        try:
-            for SENSEBOX_ID in SENSEBOX_IDS:
-                api_endpoint = f"https://api.opensensemap.org/boxes/{SENSEBOX_ID}?format=json"
-                response = requests.get(api_endpoint, timeout=10)
+        for SENSEBOX_ID in SENSEBOX_IDS:
+            try:
+                response = requests.get(
+                    f"https://api.opensensemap.org/boxes/{SENSEBOX_ID}?format=json",
+                    timeout=10
+                )
                 response.raise_for_status()
                 data = response.json()
 
                 temperature_info = TemperatureInfo.from_dict(data)
                 sensor_name = SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed")
-                sensor_status = status_assess(temperature_info.value) if temperature_info.valid else "No valid reading"
 
-                if temperature_info.valid:
-                    valid_readings.append(temperature_info.value)
+                is_valid = temperature_info.createdAt != ""
+                temp_value = temperature_info.value if is_valid else 0.0
+                status = status_assess(temp_value) if is_valid else "No valid reading"
 
-                # Update Prometheus gauge
-                temperature_gauge.labels(box_id=SENSEBOX_ID, name=sensor_name).set(temperature_info.value)
+                if is_valid:
+                    valid_readings.append(temp_value)
+
+                # Update Prometheus metric
+                temperature_gauge.labels(box_id=SENSEBOX_ID, name=sensor_name).set(temp_value)
 
                 box_results.append({
-                    "name": SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed"),
+                    "name": sensor_name,
                     "box_id": SENSEBOX_ID,
-                    "temperature": temperature_info.value,
-                    "status": sensor_status,
+                    "temperature": temp_value,
+                    "status": status,
                     "checked_at": checked_at
                 })
 
-           # Compute average
-            if valid_readings:
-                avg_temp = sum(valid_readings) / len(valid_readings)
-            else:
-                avg_temp = None
-                status = "No valid readings to assess status"
+            except requests.RequestException as e:
+                box_results.append({
+                    "name": SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed"),
+                    "box_id": SENSEBOX_ID,
+                    "temperature": None,
+                    "status": "API request failed",
+                    "checked_at": checked_at,
+                    "error": str(e)
+                })
 
-            return jsonify({
-                "average_temperature": avg_temp,
-                "readings": box_results
-            }), 200
+        avg_temp = sum(valid_readings) / len(valid_readings) if valid_readings else None
 
-        except requests.RequestException as e:
-            return jsonify({
-                "ERROR": "Failed to fetch data from external API",
-                "details": str(e)
-            }), 500
-         
-    @app.route('/version', methods=['GET'])
+        return jsonify({
+            "average_temperature": avg_temp,
+            "readings": box_results
+        }), 200
+
+    @app.route('/version')
     def get_version():
-        version = os.getenv("API_VERSION", "0.0.0")  # Default value if not found
-        return jsonify({"version": version})
+        return jsonify({"version": API_VERSION})
 
     @app.route('/')
     def index():
         return (
             "<h1>Welcome to this python app by Miriam C. Palanca</h1>"
-            "<p>You can check the version of the app with /version and /temperature to check the hivebox status.</p>"
+            "<p>Try <a href='/temperature'>/temperature</a> or <a href='/metrics'>/metrics</a>.</p>"
         )
 
     return app
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)

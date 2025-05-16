@@ -6,13 +6,28 @@
     "refresh": "30s",
     "schemaVersion": 37,
     "version": 1,
+    "variables": {
+      "list": [
+        {
+          "name": "sensor_name",
+          "type": "query",
+          "label": "Sensor Name",
+          "query": "label_values(sensor_temperature_celsius, name)",
+          "refresh": 2,
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*",
+          "hide": 0
+        }
+      ]
+    },
     "panels": [
       {
         "type": "stat",
-        "title": "Current Temperature per Hive",
+        "title": "Current Temperature",
         "targets": [
           {
-            "expr": "sensor_temperature_celsius",
+            "expr": "sensor_temperature_celsius{name=\"$sensor_name\"}",
             "legendFormat": "{{name}}",
             "refId": "A"
           }
@@ -32,14 +47,16 @@
           },
           "overrides": []
         },
-        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 5 }
+        "gridPos": { "x": 0, "y": 0, "w": 6, "h": 5 },
+        "repeat": "sensor_name",
+        "repeatDirection": "h"
       },
       {
         "type": "gauge",
-        "title": "Temperature Gauge per Hive",
+        "title": "Temperature Gauge",
         "targets": [
           {
-            "expr": "sensor_temperature_celsius",
+            "expr": "sensor_temperature_celsius{name=\"$sensor_name\"}",
             "legendFormat": "{{name}}",
             "refId": "B"
           }
@@ -61,14 +78,16 @@
           },
           "overrides": []
         },
-        "gridPos": { "x": 12, "y": 0, "w": 12, "h": 5 }
+        "gridPos": { "x": 0, "y": 5, "w": 6, "h": 5 },
+        "repeat": "sensor_name",
+        "repeatDirection": "h"
       },
       {
         "type": "timeseries",
         "title": "Temperature Over Time",
         "targets": [
           {
-            "expr": "sensor_temperature_celsius",
+            "expr": "sensor_temperature_celsius{name=~\"$sensor_name\"}",
             "legendFormat": "{{name}}",
             "refId": "C"
           }
@@ -79,7 +98,7 @@
           },
           "overrides": []
         },
-        "gridPos": { "x": 0, "y": 5, "w": 24, "h": 10 }
+        "gridPos": { "x": 0, "y": 10, "w": 24, "h": 10 }
       }
     ]
   },

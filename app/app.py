@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from jsonpath_ng.ext import parse
 from dateutil import parser as createdAt_parser
 from prometheus_flask_exporter import PrometheusMetrics
+from prometheus_client import Gauge
 
 # Load environment variables
 load_dotenv()
@@ -16,6 +17,9 @@ API_VERSION = os.getenv('API_VERSION', '0.0.0')
 
 # Create a mapping between SENSEBOX_IDs and their names
 SENSEBOX_MAP = dict(zip(SENSEBOX_IDS, SENSEBOX_NAMES))
+
+# Prometheus metric
+temperature_gauge = Gauge('sensor_temperature_celsius', 'Sensor temperature in °C', ['box_id', 'name'])
 
 @dataclass
 class TemperatureInfo:
@@ -52,8 +56,6 @@ def status_assess(avg_temp):
 
 def create_app(testing=False):
     app = Flask(__name__)
-
-    # Set up Prometheus metrics
     metrics = PrometheusMetrics(app)
 
     @app.route('/temperature', methods=['GET'])
@@ -70,10 +72,14 @@ def create_app(testing=False):
                 data = response.json()
 
                 temperature_info = TemperatureInfo.from_dict(data)
-
+                sensor_name = SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed")
                 sensor_status = status_assess(temperature_info.value) if temperature_info.valid else "No valid reading"
+
                 if temperature_info.valid:
                     valid_readings.append(temperature_info.value)
+
+                # Update Prometheus gauge
+                temperature_gauge.labels(box_id=SENSEBOX_ID, name=sensor_name).set(temperature_info.value)
 
                 box_results.append({
                     "name": SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed"),
@@ -86,27 +92,33 @@ def create_app(testing=False):
            # Compute average
             if valid_readings:
                 avg_temp = sum(valid_readings) / len(valid_readings)
-                status = status_assess(avg_temp)
             else:
                 avg_temp = None
                 status = "No valid readings to assess status"
 
             return jsonify({
                 "average_temperature": avg_temp,
+                "readings": box_results
             }), 200
 
         except requests.RequestException as e:
-            return jsonify({"ERROR": "Failed to fetch data from external API", "details": str(e)}), 500
-
+            return jsonify({
+                "ERROR": "Failed to fetch data from external API",
+                "details": str(e)
+            }), 500
+         
     @app.route('/version', methods=['GET'])
     def get_version():
         version = os.getenv("API_VERSION", "0.0.0")  # Default value if not found
         return jsonify({"version": version})
 
-    @app.route("/")
+    @app.route('/')
     def index():
-        return "<h1>Welcome to this python app by Miriam C. Palanca</h1><p>You can check the version of the app with /version and /temperature to check the hivebox status.</p>"
-        #return redirect("http://localhost/index.php") with nginx
+        return (
+            "<h1>Welcome to this python app by Miriam C. Palanca</h1>"
+            "<p>You can check the version of the app with /version and /temperature to check the hivebox status.</p>"
+        )
+
     return app
 
 if __name__ == "__main__":

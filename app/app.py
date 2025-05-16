@@ -6,11 +6,16 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from jsonpath_ng.ext import parse
 from dateutil import parser as createdAt_parser
+from prometheus_flask_exporter import PrometheusMetrics
 
 # Load environment variables
 load_dotenv()
 SENSEBOX_IDS = os.getenv('SENSEBOX_IDS', '').split(',')
+SENSEBOX_NAMES = os.getenv('SENSEBOX_NAMES', '').split(',')
 API_VERSION = os.getenv('API_VERSION', '0.0.0')
+
+# Create a mapping between SENSEBOX_IDs and their names
+SENSEBOX_MAP = dict(zip(SENSEBOX_IDS, SENSEBOX_NAMES))
 
 @dataclass
 class TemperatureInfo:
@@ -30,8 +35,8 @@ class TemperatureInfo:
                 if created_at:
                     created_at_fmt = createdAt_parser.isoparse(created_at)
                     if created_at_fmt > (datetime.now(timezone.utc) - timedelta(hours=1)):
-                        valid = True
                         value = float(match.value.get('value', 0.0))  # Default to 0 if no value is found
+                        valid = True
                         break
             except Exception as e:
                 print(f"Error parsing temperature data: {e}")
@@ -48,24 +53,48 @@ def status_assess(avg_temp):
 def create_app(testing=False):
     app = Flask(__name__)
 
+    # Set up Prometheus metrics
+    metrics = PrometheusMetrics(app)
+
     @app.route('/temperature', methods=['GET'])
     def get_readings():
-        results = []
+        box_results = []
+        valid_readings = []
+        checked_at = datetime.now(timezone.utc).isoformat()
+
         try:
             for SENSEBOX_ID in SENSEBOX_IDS:
                 api_endpoint = f"https://api.opensensemap.org/boxes/{SENSEBOX_ID}?format=json"
-                response = requests.get(api_endpoint, timeout=100)
+                response = requests.get(api_endpoint, timeout=10)
                 response.raise_for_status()
                 data = response.json()
-                temperature_info = TemperatureInfo.from_dict(data)
-                if temperature_info.valid:
-                    results.append(temperature_info.value)
 
-            if results:
-                avg_temp = sum(results) / len(results)
-                return jsonify({"Average temperature": f"{avg_temp}", "Status": f"{status_assess(avg_temp)}"}), 200
+                temperature_info = TemperatureInfo.from_dict(data)
+
+                sensor_status = status_assess(temperature_info.value) if temperature_info.valid else "No valid reading"
+                if temperature_info.valid:
+                    valid_readings.append(temperature_info.value)
+
+                box_results.append({
+                    "name": SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed"),
+                    "box_id": SENSEBOX_ID,
+                    "temperature": temperature_info.value,
+                    "status": sensor_status,
+                    "checked_at": checked_at
+                })
+
+           # Compute average
+            if valid_readings:
+                avg_temp = sum(valid_readings) / len(valid_readings)
+                status = status_assess(avg_temp)
             else:
-                return jsonify({"ERROR": "No valid temperature readings found"}), 500
+                avg_temp = None
+                status = "No valid readings to assess status"
+
+            return jsonify({
+                "average_temperature": avg_temp,
+            }), 200
+
         except requests.RequestException as e:
             return jsonify({"ERROR": "Failed to fetch data from external API", "details": str(e)}), 500
 

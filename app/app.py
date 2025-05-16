@@ -53,7 +53,7 @@ def status_assess(temp):
 
 def create_app(testing=False):
     app = Flask(__name__)
-    metrics = PrometheusMetrics(app)
+    metrics = PrometheusMetrics(app, path='/metrics')
 
     @app.route('/temperature', methods=['GET'])
     def get_readings():

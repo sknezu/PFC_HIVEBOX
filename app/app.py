@@ -144,8 +144,55 @@ def create_app(testing=False):
 
     @app.route('/')
     def index():
-        # All content is inside index.html, so no extra context needed
-        return render_template("index.html", version=API_VERSION)
+        box_results = []
+        valid_readings = []
+        checked_at = datetime.now(timezone.utc).isoformat()
+
+        for SENSEBOX_ID in SENSEBOX_IDS:
+            try:
+                response = requests.get(
+                    f"https://api.opensensemap.org/boxes/{SENSEBOX_ID}?format=json",
+                    timeout=10
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                temperature_info = TemperatureInfo.from_dict(data)
+                sensor_name = SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed")
+
+                is_valid = temperature_info.createdAt != ""
+                temp_value = temperature_info.value if is_valid else 0.0
+                status = status_assess(temp_value) if is_valid else "No valid reading"
+
+                if is_valid:
+                    valid_readings.append(temp_value)
+
+                box_results.append({
+                    "name": sensor_name,
+                    "box_id": SENSEBOX_ID,
+                    "temperature": temp_value,
+                    "status": status,
+                    "checked_at": checked_at
+                })
+
+            except requests.RequestException as e:
+                box_results.append({
+                    "name": SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed"),
+                    "box_id": SENSEBOX_ID,
+                    "temperature": None,
+                    "status": "API request failed",
+                    "checked_at": checked_at,
+                    "error": str(e)
+                })
+
+        avg_temp = sum(valid_readings) / len(valid_readings) if valid_readings else None
+
+        return render_template(
+            "index.html",
+            version=API_VERSION,
+            average_temperature=avg_temp,
+            readings=box_results
+        )
 
     @app.route('/version')
     def get_version():

@@ -1,4 +1,4 @@
-#version: '3.8'
+version: '3.8'
 
 services:
   web:
@@ -44,6 +44,9 @@ services:
       - grafana_storage:/var/lib/grafana
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     depends_on:
       - prometheus
     networks:

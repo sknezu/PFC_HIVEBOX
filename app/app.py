@@ -88,60 +88,6 @@ def create_app(testing=False):
     thread = threading.Thread(target=update_metrics_periodically, args=(60,), daemon=True)
     thread.start()
 
-    @app.route('/temperature', methods=['GET'])
-    def get_readings():
-        box_results = []
-        valid_readings = []
-        checked_at = datetime.now(timezone.utc).isoformat()
-
-        for SENSEBOX_ID in SENSEBOX_IDS:
-            try:
-                response = requests.get(
-                    f"https://api.opensensemap.org/boxes/{SENSEBOX_ID}?format=json",
-                    timeout=10
-                )
-                response.raise_for_status()
-                data = response.json()
-
-                temperature_info = TemperatureInfo.from_dict(data)
-                sensor_name = SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed")
-
-                is_valid = temperature_info.createdAt != ""
-                temp_value = temperature_info.value if is_valid else 0.0
-                status = status_assess(temp_value) if is_valid else "No valid reading"
-
-                if is_valid:
-                    valid_readings.append(temp_value)
-
-                # Update Prometheus metric immediately as well
-                temperature_gauge.labels(box_id=SENSEBOX_ID, name=sensor_name).set(temp_value)
-
-                box_results.append({
-                    "name": sensor_name,
-                    "box_id": SENSEBOX_ID,
-                    "temperature": temp_value,
-                    "status": status,
-                    "checked_at": checked_at
-                })
-
-            except requests.RequestException as e:
-                box_results.append({
-                    "name": SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed"),
-                    "box_id": SENSEBOX_ID,
-                    "temperature": None,
-                    "status": "API request failed",
-                    "checked_at": checked_at,
-                    "error": str(e)
-                })
-
-        avg_temp = sum(valid_readings) / len(valid_readings) if valid_readings else None
-
-        return render_template(
-            "temperature.html",
-            average_temperature=avg_temp,
-            readings=box_results
-        )
-
     @app.route('/')
     def index():
         box_results = []

@@ -24,23 +24,22 @@ services:
       - monitor
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:latest
     restart: unless-stopped    
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
-      - --web.prefix=/prometheus
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --web.external-url=http://localhost/prometheus/
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.external-url=http://localhost:80/prometheus/'
     depends_on:
       - web
     networks:
       - monitor
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:latest
     restart: unless-stopped
     ports:
       - "3000:3000"

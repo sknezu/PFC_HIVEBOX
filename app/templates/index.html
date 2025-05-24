@@ -1,15 +1,156 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Hive Monitoring Box</title>
+        <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
+            <a class="navbar-brand js-scroll-trigger" href="#page-top">
+                <span class="d-block d-lg-none">Miriam C. Palanca</span>
+                <span class="d-none d-lg-block"><img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="assets/img/profile.jpg" alt="Miriam" /></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#temperature">Web Temperature</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#prometheus-metrics">Prometheus Metrics</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#grafana">Grafana Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#app-data">App Information</a></li>
+                </ul>
+            </div>
+        </nav>
+        <!-- Page Content-->
+        <div class="container-fluid p-0">
+        
+            <!-- About-->
+            
+            <section class="resume-section" id="about">
+                <div class="resume-section-content">
+                    <h1 class="mb-0">
+                        Miriam
+                        <span class="text-primary">C.Palanca</span>
+                        🐝
+                    </h1>
+                    <div class="subheading mb-5">
+                        Aspiring DevOps, Systems Administrator and Graphic Designer<br>
+                        <a href="mailto:name@email.com">miriamchp.sknezu@gmail.com</a>
+                    </div>
+                    <p class="lead mb-5">Welcome to my Hive Box reimagined project: The Hive Monitoring Box.<br>
+                    This project was developed as my PFC on my last year studying System Administration at IES Font de Sant LLuis.</p>
+                    <div class="social-icons">
+                        <a class="social-icon" href="https://www.linkedin.com/in/miriamchp/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i></a>
+                        <a class="social-icon" href="https://github.com/sknezu/PFC_HIVEBOX" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                        <a class="social-icon" href="https://www.artstation.com/shironezu" target="_blank" rel="noopener noreferrer"><i class="fas fa-globe"></i></a>
+                    </div>
+                </div>
+            </section>
+            <hr class="m-0" />
+            
+            <!-- Web Temperature-->
+            
+            <section class="resume-section" id="temperature">
+              <div class="resume-section-content">
+                <h2 class="mb-5">📉 Temperature Data</h2>
 
-{% block title %}Hive Monitoring Box Dashboard{% endblock %}
+                {% if readings %}
+                  <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-hover align-middle">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Name</th>
+                          <th>Box ID</th>
+                          <th>Temperature (°C)</th>
+                          <th>Status</th>
+                          <th>Checked At</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for reading in readings %}
+                          <tr>
+                            <td>{{ reading.name }}</td>
+                            <td>{{ reading.box_id }}</td>
+                            <td>{{ reading.temperature or 'N/A' }}</td>
+                            <td>{{ reading.status }}</td>
+                            <td>{{ reading.checked_at }}</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p><strong>Average Temperature:</strong> {{ average_temperature or 'N/A' }} °C</p>
+                {% else %}
+                  <p>No readings available.</p>
+                {% endif %}
 
-{% block content %}
-  <h1 class="text-primary">🐝 Hive Monitoring Box 🐝</h1>
-  <p class="lead">Created by Miriam C. Palanca</p>
-  <p>Monitor your beehive environment easily.</p>
+                <br><a href="#about" class="btn btn-outline-primary mt-3">Back to Top</a>
+              </div>
+            </section>
+            <hr class="m-0" />
+            
+            <!-- Prometheus Metrics-->
+            
+            <section class="resume-section" id="prometheus-metrics">
+              <div class="resume-section-content">
+                <h2 class="mb-5">📈 Prometheus Metrics</h2>
 
-  <a href="/temperature" class="btn btn-success me-2">View Temperature</a>
-  <a href="/metrics" class="btn btn-secondary">View Prometheus Metrics</a>
-  <a href="/grafana" target="_blank" class="btn btn-warning">Open Grafana</a>
-  <!--<a href="/grafana/d/abc123/hive-dashboard" class="btn btn-warning" target="_blank">Open Hive Dashboard</a>-->
-  <a href="/about" class="btn btn-info me-2">About</a>
-{% endblock %}
+                <p>Access live Prometheus metrics for detailed monitoring of this Hive Monitoring Box.</p>
+
+                <a href="/metrics" class="btn btn-secondary" target="_blank">View Prometheus Metrics</a>
+              
+                <br><a href="#about" class="btn btn-outline-primary mt-3">Back to Top</a>
+              </div>
+            </section>
+            <hr class="m-0" />
+
+            <!-- Grafana Access -->
+            
+            <section class="resume-section" id="grafana">
+              <div class="resume-section-content">
+                <h2 class="mb-5">📊 Grafana Dashboard</h2>
+
+                <p>Access Grafana to check the information gathered in this Hive Monitoring Box.</p>
+                <a href="/grafana" target="_blank" class="btn btn-secondary" target="_blank">Open Grafana</a>
+                <br><br>
+                <p>Access directly to the Hive Monitoring Box Dashboard.</p>
+                <a href="/grafana/d/abc123/hive-dashboard" class="btn btn-secondary" target="_blank">Open Hive Dashboard</a>
+                
+                <br><a href="#about" class="btn btn-outline-primary mt-3">Back to Top</a>
+              </div>
+            </section>
+            <hr class="m-0" />
+
+            <!-- App About -->
+
+            <section class="resume-section" id="app-data">
+              <div class="resume-section-content">
+                <h2 class="mb-5">📄 About This App</h2>
+                <ul class="list-group">
+                  <li class="list-group-item"><strong>App Version:</strong> {{ version }}</li>
+                  <li class="list-group-item"><strong>Developer:</strong> Miriam C. Palanca</li>
+                  <li class="list-group-item"><strong>Purpose:</strong> Monitor environmental temperature of hives using SenseBox data and Prometheus.</li>
+                </ul>
+                <br><a href="#about" class="btn btn-outline-primary mt-3">Back to Top</a>
+              </div>
+            </section>
+            <hr class="m-0" />
+
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>

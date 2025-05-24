@@ -2,7 +2,7 @@
 
 services:
   web:
-    image: sknezu/hive-monitor:latest
+    image: sknezu/hive-monitor-bootstrap:latest
     restart: unless-stopped
     ports:
       - "5000:5000"

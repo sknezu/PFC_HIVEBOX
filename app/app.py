@@ -144,11 +144,8 @@ def create_app(testing=False):
 
     @app.route('/')
     def index():
-        return render_template("index.html")
-
-    @app.route('/about')
-    def about():
-        return render_template("about.html", version=API_VERSION)
+        # All content is inside index.html, so no extra context needed
+        return render_template("index.html", version=API_VERSION)
 
     @app.route('/version')
     def get_version():

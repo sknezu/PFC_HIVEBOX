@@ -1,15 +1,19 @@
-from flask import Flask, jsonify, Response, render_template
-import requests
+"""Flask app to fetch and expose temperature sensor data from SenseBox and provide Prometheus metrics."""
+
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+import threading
+import time
+from typing import Optional
+
+from flask import Flask, jsonify, Response, render_template
+import requests
 from dotenv import load_dotenv
 from jsonpath_ng.ext import parse
 from dateutil import parser as createdAt_parser
 from prometheus_flask_exporter import PrometheusMetrics
 from prometheus_client import Gauge, generate_latest, CONTENT_TYPE_LATEST
-import threading
-import time
 
 # Load environment variables
 load_dotenv()
@@ -29,7 +33,7 @@ class TemperatureInfo:
     value: float
 
     @classmethod
-    def from_dict(cls, data: dict) -> "TemperatureInfo":
+    def from_dict(cls, data: dict) -> Optional["TemperatureInfo"]:
         jsonpath_expression = parse('$.sensors[?(@.unit=="°C")].lastMeasurement')
         created_at = ""
         value = 0.0
@@ -41,8 +45,10 @@ class TemperatureInfo:
                     if created_at_fmt > (datetime.now(timezone.utc) - timedelta(hours=1)):
                         value = float(match.value.get('value', 0.0))
                         break
-            except Exception as e:
-                print(f"Error parsing temperature data: {e}")
+            except (ValueError, TypeError, AttributeError) as e:
+                print(f"Error parsing temperature data: {e}")               
+        if created_at == "":
+            return None
         return cls(createdAt=created_at, value=value)
 
 def status_assess(temp):
@@ -70,8 +76,7 @@ def update_temperature_metrics():
             # Update Prometheus gauge
             temperature_gauge.labels(box_id=SENSEBOX_ID, name=sensor_name).set(temp_value)
 
-        except requests.RequestException as e:
-            # Optionally reset gauge or set to 0 on error
+        except requests.RequestException as _e:
             temperature_gauge.labels(box_id=SENSEBOX_ID, name=SENSEBOX_MAP.get(SENSEBOX_ID, "Unnamed")).set(0.0)
 
 def update_metrics_periodically(interval=60):
@@ -79,7 +84,7 @@ def update_metrics_periodically(interval=60):
         update_temperature_metrics()
         time.sleep(interval)
 
-def create_app(testing=False):
+def create_app():
     app = Flask(__name__)
     metrics = PrometheusMetrics(app)
     metrics.info('app_info', 'Application info', version=API_VERSION)
@@ -87,6 +92,7 @@ def create_app(testing=False):
     # Start background thread to update metrics every 60 seconds
     thread = threading.Thread(target=update_metrics_periodically, args=(60,), daemon=True)
     thread.start()
+    
 
     @app.route('/')
     def index():
@@ -146,10 +152,12 @@ def create_app(testing=False):
 
     @app.route('/metrics')
     def metrics_route():
-        update_temperature_metrics()
+        # Just serve latest metrics, updated in background thread
         return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
+    return app
 
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True, host="0.0.0.0", port=5000)
+

@@ -31,8 +31,9 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
-      - '--web.external-url=/prometheus/'
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      - --web.prefix=/prometheus
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.external-url=http://localhost/prometheus/
     depends_on:
       - web
     networks:
@@ -50,6 +51,9 @@ services:
     environment:
       - GF_SERVER_ROOT_URL=/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SERVER_HTTP_PORT=3000
+      - GF_SERVER_ENABLE_GZIP=true
+      - GF_AUTH_DISABLE_LOGIN_FORM=false
     depends_on:
       - prometheus
     networks:

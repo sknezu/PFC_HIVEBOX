@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}About Hive Monitor{% endblock %}
+
+{% block content %}
+  <h2 class="mb-3">📄 About This App</h2>
+  <ul class="list-group">
+    <li class="list-group-item"><strong>App Version:</strong> {{ version }}</li>
+    <li class="list-group-item"><strong>Developer:</strong> Miriam C. Palanca</li>
+    <li class="list-group-item"><strong>Purpose:</strong> Monitor environmental temperature of hives using SenseBox data and Prometheus.</li>
+  </ul>
+
+  <a href="/" class="btn btn-outline-primary mt-3">Back to Home</a>
+{% endblock %}

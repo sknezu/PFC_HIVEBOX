@@ -24,18 +24,18 @@ Phase 2 includes **three sensors close to each other**:
 
  > **Gerstungen**: ([5d0fc7fd30bde6001a364a79](https://opensensemap.org/explore/5d0fc7fd30bde6001a364a79))
 
-These sensors will retrieve the original **temperature data** (/temperature) and  **version of the app** (/version), along with  **prometheus metrics** (/metrics) and  **stored time of data** (/store) and, if time allows  **readyness of data** (/readyz).
+These sensors will retrieve the original **temperature data** (/temperature) and  **version of the app** (/version), along with  **prometheus metrics** (/metrics).
 
-During this Phase, I aim to follow the steps of the original project up to the Phase 5. This means that I'll need:
+During this Phase, I aim to achieve the goal described in my official project prompt. This is the checklist to follow.
 
 ### Phase 2 Checklist:
-- &#9744; Update Python Flask Application (iteration)
-- &#9744; Kubernetes Kind config with Ingress-Nginx + Manifests to deploy
-- &#9744; Caching and Storage layers (Valkey + MinIO)
-- &#9744; SSL Encryptation and FreeDNS, connect to the cluster
-- &#9744; Deploy Grafana to collect logs and metrics, move to cluster
+- &#9745; Update Python Flask Application (iteration)
+- &#9745; Connect Prometheus to my Flask app & Grafana
+- &#9745; Add NGINX as front-end with bootstrap layout
+- &#9744; Iteration and Improvement
 
 ### Extras:
+- Create a Kubernetes cluster for the App
 - Kyverno for Policy as Code
 - Terraform for multi-environment (Dev, Stage, Prod)
 - TestKube for testing

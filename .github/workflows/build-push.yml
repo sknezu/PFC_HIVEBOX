@@ -44,8 +44,8 @@ jobs:
         file: ./app/Dockerfile
         push: true
         tags: |
-          ${{ secrets.DOCKER_USERNAME }}/hive-monitor:latest
-          ${{ secrets.DOCKER_USERNAME }}/hive-monitor:${{ github.sha }}
+          ${{ secrets.DOCKER_USERNAME }}/hive-monitor-bootstrap:latest
+          ${{ secrets.DOCKER_USERNAME }}/hive-monitor-bootstrap:${{ github.sha }}
 
     - name: Verify Docker buildx version
       run: docker buildx version

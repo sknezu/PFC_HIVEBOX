@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, Response
+from flask import Flask, jsonify, Response, render_template
 import requests
 import os
 from dataclasses import dataclass
@@ -136,21 +136,23 @@ def create_app(testing=False):
 
         avg_temp = sum(valid_readings) / len(valid_readings) if valid_readings else None
 
-        return jsonify({
-            "average_temperature": avg_temp,
-            "readings": box_results
-        }), 200
+        return render_template(
+            "temperature.html",
+            average_temperature=avg_temp,
+            readings=box_results
+        )
+
+    @app.route('/')
+    def index():
+        return render_template("index.html")
+
+    @app.route('/about')
+    def about():
+        return render_template("about.html", version=API_VERSION)
 
     @app.route('/version')
     def get_version():
         return jsonify({"version": API_VERSION})
-
-    @app.route('/')
-    def index():
-        return (
-            "<h1>Welcome to this python app by Miriam C. Palanca</h1>"
-            "<p>Try <a href='/temperature'>/temperature</a> or <a href='/metrics'>/metrics</a>.</p>"
-        )
 
     @app.route('/metrics')
     def metrics_route():

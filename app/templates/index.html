@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Hive Monitoring Box Dashboard{% endblock %}
+
+{% block content %}
+  <h1 class="text-primary">🐝 Hive Monitoring Box 🐝</h1>
+  <p class="lead">Created by Miriam C. Palanca</p>
+  <p>Monitor your beehive environment easily.</p>
+
+  <a href="/temperature" class="btn btn-success me-2">View Temperature</a>
+  <a href="/metrics" class="btn btn-secondary">View Prometheus Metrics</a>
+  <a href="/grafana" target="_blank" class="btn btn-warning">Open Grafana</a>
+  <!--<a href="/grafana/d/abc123/hive-dashboard" class="btn btn-warning" target="_blank">Open Hive Dashboard</a>-->
+  <a href="/about" class="btn btn-info me-2">About</a>
+{% endblock %}

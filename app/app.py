@@ -146,9 +146,9 @@ def create_app(testing=False):
 
     @app.route('/metrics')
     def metrics_route():
+        update_temperature_metrics()
         return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
-    return app
 
 if __name__ == "__main__":
     app = create_app()
